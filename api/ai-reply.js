@@ -29,7 +29,7 @@ export default async function handler(req, res) {
 
   const models = process.env.GEMINI_MODEL
     ? [process.env.GEMINI_MODEL]
-    : ["gemini-3.5-flash", "gemini-2.5-flash"];
+    : ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash"];
 
   const errors = [];
   for (const model of models) {
@@ -39,6 +39,7 @@ export default async function handler(req, res) {
         {
           method: "POST",
           headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+          signal: AbortSignal.timeout(8000),
           body: JSON.stringify({
             systemInstruction: { parts: [{ text: SYSTEM }] },
             contents,
