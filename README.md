@@ -21,6 +21,7 @@ React was chosen to build reusable UI components and manage interactive screens.
 - Expandable lead details and lead profile navigation
 - Callback demo interactions (no real call is placed)
 - Browser-to-browser voice and video call demo (PeerJS) on the Voice Call page
+- Simulated human-to-AI call (scripted replies, clearly labelled) on the same page
 - Calendar with month navigation and sample follow-ups
 - Pulse home (AvaniBot, role/task agents, Kudos, channels) and channel chat
 - Leads modal with collapsible buying signals and first/last-record handling
@@ -64,7 +65,7 @@ Vite generates the production output in the `dist` directory.
 
 ## Data and Limitations
 
-This assignment uses sample data and client-side state. It does not connect to a backend, place real phone calls, or persist all interactions to a server. Call and callback actions are demonstrations only. Calling status: Plan and dashboard callbacks are simulated; the Voice Call page is a real browser-to-browser audio call between two browser windows (PeerJS), not a phone call. The same page offers a browser-to-browser video call (PeerJS). Phone/Twilio calling and human-to-AI voice conversation are not implemented. Data may reset when the application is reloaded.
+This assignment uses sample data and client-side state. It does not connect to a backend, place real phone calls, or persist all interactions to a server. Call and callback actions are demonstrations only. Calling status: Plan and dashboard callbacks are simulated; the Voice Call page is a real browser-to-browser audio call between two browser windows (PeerJS), not a phone call. The same page offers a browser-to-browser video call (PeerJS). Phone/Twilio calling is not implemented. The human-to-AI call is a simulated demonstration: Avani gives scripted keyword replies, with the browser's speech recognition and speech synthesis; no AI model or API is used. Data may reset when the application is reloaded.
 
 ## AI Tools and Development
 

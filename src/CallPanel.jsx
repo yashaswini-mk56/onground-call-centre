@@ -1,6 +1,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Peer from "peerjs";
+import AiCallPanel from "./AiCallPanel";
 
 export default function CallPanel() {
   const [peerId, setPeerId] = useState("");
@@ -129,6 +130,7 @@ export default function CallPanel() {
   }
 
   return (
+    <>
     <section style={{
       padding: 24,
       maxWidth: 480,
@@ -195,5 +197,7 @@ export default function CallPanel() {
         style={{ width: "100%", background: "#111", borderRadius: 8, marginTop: 8 }}
       />
     </section>
+    <AiCallPanel />
+    </>
   );
 }
