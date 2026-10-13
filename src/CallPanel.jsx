@@ -12,6 +12,7 @@ export default function CallPanel() {
   const callRef = useRef(null);
   const localStreamRef = useRef(null);
   const audioRef = useRef(null);
+  const localVideoRef = useRef(null);
 
   useEffect(() => {
     const peer = new Peer();
@@ -38,19 +39,27 @@ export default function CallPanel() {
     };
   }, []);
 
-  async function answerCall(call) {
+  async function answerCall(call, withVideo = false) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
+        video: withVideo,
       });
 
       localStreamRef.current = stream;
+      showLocalVideo(stream);
       call.answer(stream);
       connectAudio(call);
       setIncomingCall(null);
       setStatus("Call connected");
     } catch {
       setStatus("Microphone permission is required");
+    }
+  }
+
+  function showLocalVideo(stream) {
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = stream;
     }
   }
 
@@ -70,6 +79,7 @@ export default function CallPanel() {
             audioRef.current.srcObject = null;
         }
 
+        if (localVideoRef.current) localVideoRef.current.srcObject = null;
         localStreamRef.current?.getTracks().forEach((track) => track.stop());
         localStreamRef.current = null;
         callRef.current = null;
@@ -81,7 +91,7 @@ export default function CallPanel() {
     });
   }
 
-  async function makeCall() {
+  async function makeCall(withVideo = false) {
     if (!remoteId.trim()) {
       setStatus("Enter the other browser's Peer ID");
       return;
@@ -90,9 +100,11 @@ export default function CallPanel() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
+        video: withVideo,
       });
 
       localStreamRef.current = stream;
+      showLocalVideo(stream);
 
       const call = peerRef.current.call(remoteId.trim(), stream);
       if (!call) {
@@ -103,13 +115,14 @@ export default function CallPanel() {
       connectAudio(call);
       setStatus("Calling...");
     } catch {
-      setStatus("Microphone permission is required");
+      setStatus("Microphone or camera permission is required");
     }
   }
 
   function endCall() {
     callRef.current?.close();
     callRef.current = null;
+    if (localVideoRef.current) localVideoRef.current.srcObject = null;
     localStreamRef.current?.getTracks().forEach((track) => track.stop());
     localStreamRef.current = null;
     setStatus("Call ended");
@@ -124,7 +137,7 @@ export default function CallPanel() {
       borderRadius: 12,
       color: "#222"
     }}>
-      <h2>On-Ground Voice Call</h2>
+      <h2>On-Ground Voice and Video Call</h2>
       <p>Status: {status}</p>
 
       <label>Your Peer ID</label>
@@ -141,8 +154,11 @@ export default function CallPanel() {
       {incomingCall && (
         <div>
           <p>Incoming call</p>
-          <button onClick={() => answerCall(incomingCall)}>
-            Answer
+          <button onClick={() => answerCall(incomingCall, false)}>
+            Answer (voice)
+          </button>{" "}
+          <button onClick={() => answerCall(incomingCall, true)}>
+            Answer (video)
           </button>
         </div>
       )}
@@ -156,10 +172,28 @@ export default function CallPanel() {
         style={{ display: "block", width: "100%", padding: 10, margin: "8px 0" }}
       />
 
-      <button onClick={makeCall}>Call</button>{" "}
+      <button onClick={() => makeCall(false)}>Voice call</button>{" "}
+      <button onClick={() => makeCall(true)}>Video call</button>{" "}
       <button onClick={endCall}>End Call</button>
 
-      <audio ref={audioRef} autoPlay controls />
+      <p style={{ fontSize: 13, color: "#667085" }}>
+        Real browser-to-browser call (PeerJS). Not a phone call.
+      </p>
+
+      <video
+        ref={localVideoRef}
+        autoPlay
+        muted
+        playsInline
+        style={{ width: "40%", background: "#111", borderRadius: 8 }}
+      />
+      <video
+        ref={audioRef}
+        autoPlay
+        playsInline
+        controls
+        style={{ width: "100%", background: "#111", borderRadius: 8, marginTop: 8 }}
+      />
     </section>
   );
 }
