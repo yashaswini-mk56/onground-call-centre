@@ -1463,3 +1463,22 @@ h1 {
     gap: 5px;
   }
 }
+
+/* ---- Added: Pulse extras, calendar events, lead modal, plan rows ---- */
+.pulse-extras { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+.pulse-card { background: white; border: 1px solid #edf0f4; border-radius: 12px; padding: 14px; }
+.pulse-card p { margin: 6px 0 10px; color: #667085; font-size: 14px; }
+.pulse-card.avani { background: #e7f7f0; }
+.section-label { margin: 6px 0 10px; font-size: 14px; color: #667085; }
+.event-list { margin-top: 16px; padding-top: 12px; border-top: 1px solid #edf0f4; }
+.event-list p { margin: 6px 0; color: #344054; font-size: 14px; }
+.calendar-day.is-today { outline: 2px solid #169d73; }
+.signals-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 10px 0; border: 0; background: none; font-weight: 800; font-size: 16px; cursor: pointer; }
+ul.signal-copy { margin: 0 0 12px; padding-left: 20px; color: #475467; }
+.lead-counter { color: #667085; font-size: 14px; }
+.modal-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.modal-actions button:disabled, .pagination button:disabled { opacity: 0.45; cursor: not-allowed; }
+.static-row { display: flex; align-items: center; gap: 12px; padding: 12px; }
+@media (max-width: 700px) {
+  .pulse-extras { grid-template-columns: 1fr; }
+}

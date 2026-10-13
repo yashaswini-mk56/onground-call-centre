@@ -9,16 +9,13 @@ import {
   ChevronDown,
   ChevronRight,
   Bell,
-  Clock,
   PhoneCall,
+  PhoneIncoming,
   History,
   Send,
   X,
   ArrowLeft,
-  TrendingUp,
   Users,
-  Wallet,
-  Headphones,
   CheckCircle2,
 } from "lucide-react";
 import "./index.css";
@@ -66,6 +63,30 @@ const leads = [
   },
 ];
 
+const missedCalls = [
+  { name: "Lakshmi R.", time: "1:42 PM", value: "₹18,000", note: "Callback requested", lead: 4 },
+  { name: "Priya Iyer", time: "12:15 PM", value: "₹32,500", note: "Billing dispute", lead: 0 },
+  { name: "Kavitha R.", time: "11:05 AM", value: "₹9,800", note: "Product enquiry", lead: 2 },
+];
+
+const recentCalls = [
+  { name: "Suresh Nair", type: "Outbound", time: "2:20 PM", duration: "6m 12s", outcome: "Interested, asked for a quote", lead: 1 },
+  { name: "Faizan A.", type: "Inbound", time: "1:05 PM", duration: "3m 40s", outcome: "Premium plan details shared", lead: 3 },
+  { name: "Lakshmi R.", type: "Outbound", time: "11:30 AM", duration: "1m 05s", outcome: "No answer, voicemail left", lead: 4 },
+];
+
+const extraSignals = [
+  "Visited the pricing page three times this week",
+  "Opened the last two follow-up messages",
+];
+
+const calendarEvents = {
+  5: "Team huddle · 10:00 AM",
+  11: "Coaching session with Sunita · 3:00 PM",
+  18: "Callback: Priya Iyer · 4:30 PM",
+  24: "Monthly performance review · 11:00 AM",
+};
+
 const initialMessages = [
   {
     name: "Sunita Rao",
@@ -104,6 +125,8 @@ export default function App() {
   const [draft, setDraft] = useState("");
   const [notice, setNotice] = useState("");
   const [taskDone, setTaskDone] = useState(false);
+  const [showSignals, setShowSignals] = useState(true);
+  const [selectedDay, setSelectedDay] = useState(null);
 
   function notify(text) {
     setNotice(text);
@@ -119,6 +142,7 @@ export default function App() {
 
   function openLead(index) {
     setLeadIndex(index);
+    setShowSignals(true);
   }
 
   function sendMessage(e) {
@@ -158,11 +182,9 @@ export default function App() {
   );
 
   const displayedLeads =
-    planTab === "Incoming"
-      ? [leads[4], leads[0], leads[2]]
-      : planTab === "Recent"
-      ? [leads[1], leads[3], leads[4]]
-      : visibleOutgoingLeads;
+    planTab === "Calls to make" ? visibleOutgoingLeads : [];
+
+  const today = new Date();
 
   return (
     <div className="app">
@@ -303,7 +325,7 @@ export default function App() {
                     <PhoneCall size={17} /> 2 callbacks · next 4:30pm
                     <ChevronRight size={17} />
                   </button>
-                  <button onClick={() => openPlan("Calls to make")}>
+                  <button onClick={() => openLead(0)}>
                     <Users size={17} /> 2 hot leads · untouched 24h
                     <ChevronRight size={17} />
                   </button>
@@ -404,25 +426,76 @@ export default function App() {
                         </div>
                       )}
 
-                      {planTab === "Incoming" && (
-                        <div className="callback-row">
-                          <span>Follow-up recommended</span>
-                          <button
-                            className="primary-button"
-                            onClick={() =>
-                              notify(
-                                `Demo callback started for ${lead.name}. No real call placed.`
-                              )
-                            }
-                          >
-                            <PhoneCall size={15} /> Call back
-                          </button>
-                        </div>
-                      )}
                     </section>
                   );
                 })}
               </div>
+
+              {planTab === "Incoming" && (
+                <div className="lead-list">
+                  {missedCalls.map((call) => (
+                    <section className="lead-row" key={call.name}>
+                      <div className="lead-summary static-row">
+                        <span className="mini-avatar">{call.name[0]}</span>
+                        <span className="row-copy">
+                          <strong>{call.name}</strong>
+                          <small>Missed at {call.time} · {call.note}</small>
+                        </span>
+                        <span className="score">
+                          {call.value}
+                          <small>AT STAKE</small>
+                        </span>
+                      </div>
+                      <div className="callback-row">
+                        <span>Missed call · callback recommended</span>
+                        <button
+                          className="primary-button"
+                          onClick={() =>
+                            notify(`Demo callback to ${call.name}. No real call placed.`)
+                          }
+                        >
+                          <PhoneCall size={15} /> Call back
+                        </button>
+                      </div>
+                    </section>
+                  ))}
+                </div>
+              )}
+
+              {planTab === "Recent" && (
+                <div className="lead-list">
+                  {recentCalls.map((call, i) => (
+                    <section className="lead-row" key={call.name}>
+                      <button
+                        className="lead-summary"
+                        onClick={() => setExpanded(expanded === i ? null : i)}
+                      >
+                        <span className="mini-avatar">{call.name[0]}</span>
+                        <span className="row-copy">
+                          <strong>{call.name}</strong>
+                          <small>{call.type} · {call.time} · {call.duration}</small>
+                        </span>
+                        <span className="score">
+                          Review
+                        </span>
+                        <ChevronDown size={18} />
+                      </button>
+                      {expanded === i && (
+                        <div className="lead-details">
+                          <p><strong>Outcome:</strong> {call.outcome}</p>
+                          <p><strong>Type:</strong> {call.type} call · {call.duration}</p>
+                          <button
+                            className="primary-button"
+                            onClick={() => openLead(call.lead)}
+                          >
+                            Open lead profile
+                          </button>
+                        </div>
+                      )}
+                    </section>
+                  ))}
+                </div>
+              )}
 
               {planTab === "Calls to make" && (
                 <div className="pagination">
@@ -500,31 +573,52 @@ export default function App() {
                     <span key={`blank-${i}`} />
                   ))}
 
-                  {Array.from({ length: days }, (_, i) => (
-                    <button
-                      key={i + 1}
-                      className={`calendar-day ${
-                        [5, 11, 18, 24].includes(i + 1) ? "has-event" : ""
-                      }`}
-                      onClick={() =>
-                        notify(
-                          `Selected ${i + 1} ${month.toLocaleString("en-IN", {
-                            month: "long",
-                          })}`
-                        )
-                      }
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
+                  {Array.from({ length: days }, (_, i) => {
+                    const d = i + 1;
+                    const isToday =
+                      d === today.getDate() &&
+                      month.getMonth() === today.getMonth() &&
+                      month.getFullYear() === today.getFullYear();
+                    return (
+                      <button
+                        key={d}
+                        className={`calendar-day ${calendarEvents[d] ? "has-event" : ""} ${isToday ? "is-today" : ""}`}
+                        onClick={() => setSelectedDay(d)}
+                      >
+                        {d}
+                        {calendarEvents[d] && <i />}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <button
                   className="primary-button today-button"
-                  onClick={() => setMonth(new Date(2026, 9, 1))}
+                  onClick={() => {
+                    setMonth(new Date(today.getFullYear(), today.getMonth(), 1));
+                    setSelectedDay(today.getDate());
+                  }}
                 >
-                  Back to October 2026
+                  Today
                 </button>
+
+                <div className="event-list">
+                  <h3>
+                    {selectedDay
+                      ? `${selectedDay} ${month.toLocaleString("en-IN", { month: "long" })}`
+                      : "Events this month"}
+                  </h3>
+                  {Object.entries(calendarEvents)
+                    .filter(([d]) => !selectedDay || Number(d) === selectedDay)
+                    .map(([d, title]) => (
+                      <p key={d}>
+                        <strong>{d} {month.toLocaleString("en-IN", { month: "short" })}</strong> · {title}
+                      </p>
+                    ))}
+                  {selectedDay && !calendarEvents[selectedDay] && (
+                    <p>No events on this day.</p>
+                  )}
+                </div>
               </section>
             </>
           )}
@@ -540,6 +634,28 @@ export default function App() {
                     <p>Updates, coaching and conversations with your team.</p>
                   </section>
 
+                  <section className="pulse-extras">
+                    <div className="pulse-card avani">
+                      <strong>✦ AvaniBot</strong>
+                      <p>Your AI coach. Today: open every call with the greeting script.</p>
+                      <button
+                        className="secondary-button"
+                        onClick={() => setChannel("Avani AI Coaching")}
+                      >
+                        Chat with Avani
+                      </button>
+                    </div>
+                    <div className="pulse-card">
+                      <strong>Role and task agents</strong>
+                      <p>Call Prep Agent · Follow-up Agent · QA Agent</p>
+                    </div>
+                    <div className="pulse-card">
+                      <strong>🏆 Kudos</strong>
+                      <p>Sunita Rao gave you kudos for handling a tough billing call.</p>
+                    </div>
+                  </section>
+
+                  <h3 className="section-label">Channels</h3>
                   <div className="channel-list">
                     {["Call Centre Team", "All Stores", "Avani AI Coaching"].map(
                       (name, i) => (
@@ -564,13 +680,6 @@ export default function App() {
                           <ChevronRight />
                         </button>
                       )
-                    )}
-                    {page === "Voice Call" && (
-                      <section className="page-heading">
-                        <h1>Voice Call</h1>
-                        <p>Test live browser-to-browser audio.</p>
-                        <CallPanel />
-                      </section>
                     )}
                   </div>
                 </>
@@ -680,24 +789,38 @@ export default function App() {
                 </div>
               </div>
 
-              <h3>Buying signals</h3>
-              <p className="signal-copy">{leads[leadIndex].signal}</p>
+              <button
+                className="signals-toggle"
+                onClick={() => setShowSignals(!showSignals)}
+                aria-expanded={showSignals}
+              >
+                Buying signals
+                {showSignals ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+              </button>
+              {showSignals && (
+                <ul className="signal-copy">
+                  {[leads[leadIndex].signal, ...extraSignals].map((sig) => (
+                    <li key={sig}>{sig}</li>
+                  ))}
+                </ul>
+              )}
               <p><strong>Phone:</strong> {leads[leadIndex].phone}</p>
 
               <div className="modal-actions">
                 <button
                   className="secondary-button"
-                  onClick={() =>
-                    setLeadIndex((leadIndex + leads.length - 1) % leads.length)
-                  }
+                  disabled={leadIndex === 0}
+                  onClick={() => setLeadIndex(leadIndex - 1)}
                 >
                   ← Previous
                 </button>
+                <span className="lead-counter">
+                  {leadIndex + 1} of {leads.length}
+                </span>
                 <button
                   className="primary-button"
-                  onClick={() =>
-                    setLeadIndex((leadIndex + 1) % leads.length)
-                  }
+                  disabled={leadIndex === leads.length - 1}
+                  onClick={() => setLeadIndex(leadIndex + 1)}
                 >
                   Next →
                 </button>
