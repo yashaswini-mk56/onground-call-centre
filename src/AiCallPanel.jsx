@@ -22,6 +22,7 @@ export default function AiCallPanel() {
   const [input, setInput] = useState("");
   const [status, setStatus] = useState("Not in a call");
   const recRef = useRef(null);
+  const historyRef = useRef([]);
 
   useEffect(() => {
     return () => {
@@ -38,9 +39,10 @@ export default function AiCallPanel() {
 
   function startCall() {
     const greeting = "Hello, this is Avani, the On-Ground assistant. How can I help?";
+    historyRef.current = [];
     setActive(true);
-    setStatus("In a simulated call");
-    setTranscript([{ who: "Avani (simulated AI)", text: greeting }]);
+    setStatus("In a call with Avani");
+    setTranscript([{ who: "Avani", text: greeting }]);
     speak(greeting);
   }
 
@@ -51,15 +53,32 @@ export default function AiCallPanel() {
     setStatus("Call ended");
   }
 
-  function send(text) {
+  async function send(text) {
     const clean = text.trim();
     if (!clean) return;
-    const answer = getReply(clean);
-    setTranscript((prev) => [
-      ...prev,
-      { who: "You", text: clean },
-      { who: "Avani (simulated AI)", text: answer },
-    ]);
+    setTranscript((prev) => [...prev, { who: "You", text: clean }]);
+    historyRef.current = [...historyRef.current, { role: "user", text: clean }];
+    setStatus("Avani is thinking...");
+
+    let answer;
+    let label = "Avani (live AI)";
+    try {
+      const response = await fetch("/api/ai-reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: historyRef.current }),
+      });
+      if (!response.ok) throw new Error("AI service unavailable");
+      const data = await response.json();
+      answer = data.reply;
+    } catch {
+      answer = getReply(clean);
+      label = "Avani (scripted fallback, live AI unavailable)";
+    }
+
+    historyRef.current = [...historyRef.current, { role: "model", text: answer }];
+    setTranscript((prev) => [...prev, { who: label, text: answer }]);
+    setStatus("In a call with Avani");
     speak(answer);
   }
 
@@ -78,7 +97,7 @@ export default function AiCallPanel() {
     const rec = new SR();
     rec.lang = "en-IN";
     rec.onresult = (event) => send(event.results[0][0].transcript);
-    rec.onend = () => setStatus("In a simulated call");
+    rec.onend = () => setStatus("In a call with Avani");
     rec.onerror = () => setStatus("Could not hear you. Try again or type.");
     recRef.current = rec;
     setStatus("Listening...");
@@ -107,8 +126,9 @@ export default function AiCallPanel() {
           fontSize: 13,
         }}
       >
-        SIMULATED DEMO: Avani gives scripted replies using keywords. No real AI
-        model or API is used. Voice uses your browser's speech tools.
+        Avani answers with a real AI model (Gemini) through a server function.
+        If the AI service is unavailable, she falls back to scripted keyword
+        replies and each reply is labelled. Voice uses your browser's speech tools.
       </p>
       <p>Status: {status}</p>
 

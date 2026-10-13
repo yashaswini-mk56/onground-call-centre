@@ -21,7 +21,7 @@ React was chosen to build reusable UI components and manage interactive screens.
 - Expandable lead details and lead profile navigation
 - Callback demo interactions (no real call is placed)
 - Browser-to-browser voice and video call demo (PeerJS) on the Voice Call page
-- Simulated human-to-AI call (scripted replies, clearly labelled) on the same page
+- Human-to-AI call with Avani (Gemini AI, with a labelled scripted fallback) on the same page
 - Calendar with month navigation and sample follow-ups
 - Pulse home (AvaniBot, role/task agents, Kudos, channels) and channel chat
 - Leads modal with collapsible buying signals and first/last-record handling
@@ -65,11 +65,20 @@ Vite generates the production output in the `dist` directory.
 
 ## Data and Limitations
 
-This assignment uses sample data and client-side state. It does not connect to a backend, place real phone calls, or persist all interactions to a server. Call and callback actions are demonstrations only. Calling status: Plan and dashboard callbacks are simulated; the Voice Call page is a real browser-to-browser audio call between two browser windows (PeerJS), not a phone call. The same page offers a browser-to-browser video call (PeerJS). Phone/Twilio calling is not implemented. The human-to-AI call is a simulated demonstration: Avani gives scripted keyword replies, with the browser's speech recognition and speech synthesis; no AI model or API is used. Data may reset when the application is reloaded.
+This assignment uses sample data and client-side state. The dashboard, plan, calendar and Pulse screens do not connect to a backend, and Plan callbacks are demonstrations only (no call is placed).
+
+### Calling status (honest summary)
+
+| Feature | Status |
+|---|---|
+| Human-to-human voice call | Real, browser-to-browser (PeerJS). Tested between two browser tabs. |
+| Human-to-human video call | Real, browser-to-browser (PeerJS). Tested between two browser tabs. |
+| Human-to-AI call (Avani) | Real AI replies from Google Gemini through a Vercel serverless function (`api/ai-reply.js`), spoken with the browser's speech tools. If the AI service is unavailable, or when run locally with `npm run dev`, it falls back to scripted keyword replies, and each reply is labelled. |
+| Web-to-phone-number call | Not working. A Twilio prototype was started, but the Twilio trial account has no phone number or verified caller ID and a negative balance, so no call to a phone could be completed. |
 
 ## AI Tools and Development
 
-ChatGPT and Claude were used for implementation guidance, debugging, CSS corrections and documentation assistance. The code was tested locally during development. The author is responsible for reviewing the implementation and explaining its behaviour.
+ChatGPT and Claude were used for implementation guidance, and Google Gemini powers the Avani AI replies at runtime. The AI tools assisted with implementation guidance, debugging, CSS corrections and documentation assistance. The code was tested locally during development. The author is responsible for reviewing the implementation and explaining its behaviour.
 
 ## Future Improvements
 
